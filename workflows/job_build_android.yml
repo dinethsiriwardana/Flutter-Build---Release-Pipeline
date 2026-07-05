@@ -1,0 +1,94 @@
+name: Build Android Job
+on:
+  workflow_call:
+    inputs:
+      build_number:
+        required: true
+        type: string
+      version_name:
+        required: true
+        type: string
+
+jobs:
+  build-android:
+    name: 🤖 Build Android (APK & AAB)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter environment
+        uses: ./.github/actions/setup-flutter-env
+        with:
+          flutter-version: ${{ vars.FLUTTER_VERSION }}
+
+      - name: Download generated code
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-code
+          path: lib/
+        continue-on-error: true
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.jks
+          keytool -list -keystore android/app/my-release-key.jks \
+            -storepass "${{ secrets.KEY_STORE_PASSWORD }}" \
+            -noprompt
+
+      - name: Setup Environments
+        uses: ./.github/actions/setup-env-files
+        with:
+          dev_env: ${{ secrets.DEV_ENV_FILE }}
+          prod_env: ${{ secrets.ENV_FILE }}
+
+      - name: Build APK (Dev)
+        env:
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
+          VERSION_NAME: ${{ inputs.version_name }}
+        run: |
+          flutter build apk --release \
+            --dart-define=KEYSTORE_PATH=android/app/my-release-key.jks \
+            --dart-define=KEY_ALIAS=$KEY_ALIAS \
+            --dart-define-from-file=.env \
+            --build-name="$VERSION_NAME" \
+            --build-number="$BUILD_NUMBER"
+
+      - name: Build App Bundle (Prod)
+        env:
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
+          VERSION_NAME: ${{ inputs.version_name }}
+        run: |
+          flutter build appbundle --release \
+            --dart-define-from-file=.prod.env \
+            --build-name="$VERSION_NAME" \
+            --build-number="$BUILD_NUMBER"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 3
+
+      - name: Upload App Bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-bundle
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 3
+
+      - name: Report Failure & Cancel Run
+        if: failure()
+        uses: ./.github/actions/report-failure
+        with:
+          version_name: ${{ inputs.version_name }}
+          build_number: ${{ inputs.build_number }}
+          gh_token: ${{ secrets.GITHUB_TOKEN }}

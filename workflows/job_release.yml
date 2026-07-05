@@ -1,0 +1,83 @@
+name: Release Job
+on:
+  workflow_call:
+    inputs:
+      build_number:
+        required: true
+        type: string
+      version_name:
+        required: true
+        type: string
+
+jobs:
+  release:
+    name: 🚀 Create GitHub Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-apk
+          path: release-artifacts/
+        continue-on-error: true
+
+      - name: Download App Bundle artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-bundle
+          path: release-artifacts/
+        continue-on-error: true
+
+      - name: Download Dev IPA artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-dev-ipa
+          path: release-artifacts/
+        continue-on-error: true
+
+      - name: Download Prod IPA artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-prod-ipa
+          path: release-artifacts/
+        continue-on-error: true
+
+      - name: Download release notes
+        uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+          path: .
+
+      - name: Zip Release Artifacts
+        env:
+          BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          mkdir -p zipped
+          if [ -f release-artifacts/app-release.apk ]; then
+            zip -j zipped/app-release-apk-${BUILD_NUMBER}.zip \
+              release-artifacts/app-release.apk
+          fi
+          if [ -f release-artifacts/app-release.aab ]; then
+            zip -j zipped/app-release-aab-${BUILD_NUMBER}.zip \
+              release-artifacts/app-release.aab
+          fi
+          if [ -f release-artifacts/RSNC_Dev.ipa ]; then
+            zip -j zipped/app-release-dev-ipa-${BUILD_NUMBER}.zip \
+              release-artifacts/RSNC_Dev.ipa
+          fi
+          if [ -f release-artifacts/RSNC.ipa ]; then
+            zip -j zipped/app-release-prod-ipa-${BUILD_NUMBER}.zip \
+              release-artifacts/RSNC.ipa
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version_name }}+${{ inputs.build_number }}
+          target_commitish: ${{ github.sha }}
+          name: V ${{ inputs.version_name }}+${{ inputs.build_number }}
+          body_path: release-notes.md
+          files: zipped/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

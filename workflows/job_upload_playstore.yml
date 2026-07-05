@@ -1,0 +1,24 @@
+name: Upload Playstore Job
+on:
+  workflow_call:
+
+jobs:
+  upload-playstore:
+    name: 📦 Play Store Distribution
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download App Bundle artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-bundle
+          path: aab/
+
+      - name: Upload AAB to Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+          packageName: ${{ secrets.ANDROID_PACKAGE_NAME }}
+          releaseFiles: aab/app-release.aab
+          track: internal
+          status: completed
