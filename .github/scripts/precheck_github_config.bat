@@ -72,7 +72,7 @@ if %MISSING_VARS% equ 0 if %MISSING_SECRETS% equ 0 (
     echo Missing Secrets: %MISSING_SECRETS%
     echo.
     if %MISSING_VARS% gtr 0 (
-        echo - To fix missing variables, run: scripts\setup_github_variables.bat
+        echo - To fix missing variables, run: .github\scripts\setup_github_variables.bat
     )
     if %MISSING_SECRETS% gtr 0 (
         echo - To fix missing secrets, manually add them via GitHub Settings.

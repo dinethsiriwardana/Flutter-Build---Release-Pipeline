@@ -70,9 +70,11 @@ jobs:
         env:
           DEVELOPMENT_TEAM: ${{ vars.IOS_TEAM_ID }}
           MAIN_PROFILE_SPECIFIER: ${{ vars.IOS_MAIN_PROFILE }}
+          # Uncomment the line below if using Live Activities / App Extensions
+          # LIVE_ACTIVITY_PROFILE_SPECIFIER: ${{ vars.IOS_LIVE_PROFILE }}
         run: |
           gem install xcodeproj --quiet
-          ruby scripts/configure_ios_signing.rb
+          ruby .github/scripts/configure_ios_signing.rb
 
       - name: Build iOS IPA (Dev)
         env:

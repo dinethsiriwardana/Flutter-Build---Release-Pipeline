@@ -6,6 +6,34 @@ This document explains how to set up, configure, and use the **`release.yml`** G
 
 ---
 
+## ⚡ Quick Setup
+
+To integrate this release pipeline into your Flutter project repository, run the appropriate command for your OS in your project's root directory:
+
+### macOS / Linux (Bash)
+```bash
+curl -sL https://raw.githubusercontent.com/dinethsiriwardana/Unified-Flutter-CI-CD-Release-Pipeline/master/.github/scripts/install.sh | bash
+```
+
+### Windows (PowerShell)
+```powershell
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dinethsiriwardana/Unified-Flutter-CI-CD-Release-Pipeline/master/.github/scripts/install.bat" -OutFile "install.bat"; .\install.bat; Remove-Item "install.bat"
+```
+
+This will automatically download and extract all the required workflows, composite actions, and local helper scripts.
+
+### ⚙️ Post-Installation Setup
+Once installed, execute the following helper scripts in your project root to interactively configure your repository variables on GitHub and verify your setup:
+
+* **To set up repository variables:**
+  * **macOS/Linux:** `./.github/scripts/setup_github_variables.sh`
+  * **Windows:** `.\.github\scripts\setup_github_variables.bat`
+* **To verify your configuration:**
+  * **macOS/Linux:** `./.github/scripts/precheck_github_config.sh`
+  * **Windows:** `.\.github\scripts\precheck_github_config.bat`
+
+---
+
 ## 🗺️ Quick Navigation
 
 - [📋 Overview & Pipeline Flow](#-overview)
@@ -54,39 +82,48 @@ graph TD
 
 ## 🛠️ Local Helper Scripts
 
-The pipeline includes helper scripts located in the `scripts/` directory to simplify configuration and check repository settings before trigger runs.
+The pipeline includes helper scripts located in the `.github/scripts/` directory to simplify configuration and check repository settings before trigger runs.
 
-### 1. Pre-flight GitHub Config Check (`scripts/precheck_github_config.sh` or `.bat`)
+### 1. Pre-flight GitHub Config Check (`.github/scripts/precheck_github_config.sh` or `.bat`)
 Validates that all necessary secrets and variables are fully configured on your remote repository.
 ```bash
 # Run on macOS/Linux
-./scripts/precheck_github_config.sh
+./.github/scripts/precheck_github_config.sh
 
 # Run on Windows
-.\scripts\precheck_github_config.bat
+.\.github\scripts\precheck_github_config.bat
 ```
 
-### 2. GitHub Variables Setup (`scripts/setup_github_variables.sh` or `.bat`)
+### 2. GitHub Variables Setup (`.github/scripts/setup_github_variables.sh` or `.bat`)
 Interactively configures all required repository variables on GitHub using the GitHub CLI (`gh`), saving you from manual entry.
 ```bash
 # Run on macOS/Linux
-./scripts/setup_github_variables.sh
+./.github/scripts/setup_github_variables.sh
 
 # Run on Windows
-.\scripts\setup_github_variables.bat
+.\.github\scripts\setup_github_variables.bat
 ```
 ---
 
-## ⚙️ Prerequisites
+## ⚙️ Prerequisites & Setup
 
 Follow these steps to integrate the release template into your Flutter project repository.
 
-### 1. Copy Workflow Files
-Copy the `.github` directory from this template to the root of your Flutter project repository. This includes:
+### 1. Copy Workflow Files (Quick Setup)
+
+Run the following command in the root of your target Flutter project repository to automatically download and set up all the workflows, composite actions, and local helper scripts:
+
+```bash
+curl -sL https://raw.githubusercontent.com/dinethsiriwardana/Unified-Flutter-CI-CD-Release-Pipeline/master/.github/scripts/install.sh | bash
+```
+
+Alternatively, you can manually copy the `.github` directory from this repository to the root of your project:
 - `.github/workflows/`: Main `release.yml` and reusable modular jobs.
 - `.github/actions/`: Composite actions for environment setup, versioning, env-files, and failure reporting.
+- `.github/scripts/`: Local helper scripts for precheck and environment variables setup.
 
 *Note: If your release branch is not named `release` (e.g., `main`), update the branch under the `on: push: branches:` section in `.github/workflows/release.yml`.*
+
 
 ---
 
@@ -315,8 +352,8 @@ To distribute Android builds, set up connections for Google Play Store and Fireb
 | [`job_*.yml`](.github/workflows/) | Reusable workflows for each platform/task |
 | [`setup-flutter-env/action.yml`](.github/actions/setup-flutter-env/action.yml) | Flutter setup composite action |
 | [`bump-version/action.yml`](.github/actions/bump-version/action.yml) | Version bump composite action |
-| [`scripts/precheck_github_config.sh`](scripts/precheck_github_config.sh) | GitHub variables & secrets validator |
-| [`scripts/setup_github_variables.sh`](scripts/setup_github_variables.sh) | Interactive GitHub variables config tool |
+| [`.github/scripts/precheck_github_config.sh`](.github/scripts/precheck_github_config.sh) | GitHub variables & secrets validator |
+| [`.github/scripts/setup_github_variables.sh`](.github/scripts/setup_github_variables.sh) | Interactive GitHub variables config tool |
 
 ---
 
@@ -355,7 +392,7 @@ If your application uses App Extensions (e.g., Live Activities, widgets), you mu
        LIVE_ACTIVITY_PROFILE_SPECIFIER: ${{ vars.IOS_LIVE_PROFILE }}
      run: |
        gem install xcodeproj --quiet
-       ruby scripts/configure_ios_signing.rb
+       ruby .github/scripts/configure_ios_signing.rb
    ```
 </details>
 

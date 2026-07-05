@@ -97,7 +97,7 @@ else
   echo ""
   
   if [ $MISSING_VARS -gt 0 ]; then
-      echo "👉 To fix missing variables, run: ./scripts/setup_github_variables.sh"
+      echo "👉 To fix missing variables, run: ./.github/scripts/setup_github_variables.sh"
   fi
   if [ $MISSING_SECRETS -gt 0 ]; then
       echo "👉 To fix missing secrets, manually add them via GitHub Settings."
