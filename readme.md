@@ -1,5 +1,7 @@
 # 🚀 Flutter CI/CD — Unified Multi-Platform Release (iOS & Android)
 
+<img width="1774" height="887" alt="ChatGPT Image Jul 5, 2026 at 07_49_38 PM" src="https://github.com/user-attachments/assets/c7750052-f426-497a-9f81-9a8a14415724" />
+
 This document explains how to set up, configure, and use the **`release.yml`** GitHub Actions workflow for your **Flutter Mobile** project.
 
 ---
