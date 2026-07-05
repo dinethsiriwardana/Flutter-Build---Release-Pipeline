@@ -1,0 +1,24 @@
+name: Report Failure & Cancel Run
+description: Creates a GitHub issue on failure and cancels the run
+inputs:
+  version_name:
+    description: "Version name"
+    required: true
+  build_number:
+    description: "Build number"
+    required: true
+  gh_token:
+    description: "GitHub token"
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.gh_token }}
+      run: |
+        gh issue create \
+          --title "🚨 Release Pipeline Failed (V ${{ inputs.version_name }}+${{ inputs.build_number }})" \
+          --body "Pipeline failed on job: ${{ github.job }}. Review logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+          --label "bug" --label "critical" --assignee "${{ github.actor }}" || true
+        gh run cancel ${{ github.run_id }}

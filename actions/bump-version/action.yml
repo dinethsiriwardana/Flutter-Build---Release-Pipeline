@@ -1,0 +1,35 @@
+name: Bump App Version
+description: Increments patch and build number, persists them as repo variables
+inputs:
+  gh_token:
+    description: "GitHub token"
+    required: true
+outputs:
+  version_name:
+    description: "Computed version name"
+    value: ${{ steps.compute.outputs.version_name }}
+  build_number:
+    description: "Incremented build number"
+    value: ${{ steps.compute.outputs.build_number }}
+runs:
+  using: composite
+  steps:
+    - id: compute
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.gh_token }}
+        MAJOR: ${{ vars.APP_V_MAJOR }}
+        MINOR: ${{ vars.APP_V_MINOR }}
+        PATCH: ${{ vars.APP_V_PATCH }}
+        BUILDNO: ${{ vars.APP_V_BUILDNO }}
+      run: |
+        NEW_PATCH=$((PATCH + 1))
+        NEW_BUILDNO=$((BUILDNO + 1))
+
+        gh variable set APP_V_PATCH --body "$NEW_PATCH"
+        gh variable set APP_V_BUILDNO --body "$NEW_BUILDNO"
+
+        VERSION_NAME="${MAJOR}.${MINOR}.${NEW_PATCH}"
+
+        echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+        echo "build_number=$NEW_BUILDNO" >> "$GITHUB_OUTPUT"

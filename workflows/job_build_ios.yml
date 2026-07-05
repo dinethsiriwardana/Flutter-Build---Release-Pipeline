@@ -41,12 +41,6 @@ jobs:
           UUID=$(security cms -D -i /tmp/main.mobileprovision | plutil -extract UUID xml1 -o - - | sed -n 's/.*<string>\(.*\)<\/string>.*/\1/p')
           cp /tmp/main.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/${UUID}.mobileprovision
 
-      - name: Install Provisioning Profile (Live Activities Extension)
-        run: |
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo "${{ secrets.BUILD_PROVISION_PROFILE_LIVE_BASE64 }}" | base64 --decode > /tmp/live.mobileprovision
-          UUID=$(security cms -D -i /tmp/live.mobileprovision | plutil -extract UUID xml1 -o - - | sed -n 's/.*<string>\(.*\)<\/string>.*/\1/p')
-          cp /tmp/live.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/${UUID}.mobileprovision
 
       - name: Setup Flutter environment
         uses: ./.github/actions/setup-flutter-env
@@ -76,7 +70,6 @@ jobs:
         env:
           DEVELOPMENT_TEAM: ${{ vars.IOS_TEAM_ID }}
           MAIN_PROFILE_SPECIFIER: ${{ vars.IOS_MAIN_PROFILE }}
-          LIVE_ACTIVITY_PROFILE_SPECIFIER: ${{ vars.IOS_LIVE_PROFILE }}
         run: |
           gem install xcodeproj --quiet
           ruby scripts/configure_ios_signing.rb
@@ -97,12 +90,12 @@ jobs:
             --export-options-plist=ios/ExportOptions.plist
             
           mkdir -p build/ios/ipa/dev
-          mv build/ios/ipa/RSNC.ipa build/ios/ipa/dev/RSNC_Dev.ipa
+          mv build/ios/ipa/*.ipa build/ios/ipa/dev/App_Dev.ipa
 
       - name: Upload Dev App to TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
-          app-path: 'build/ios/ipa/dev/RSNC_Dev.ipa'
+          app-path: 'build/ios/ipa/dev/App_Dev.ipa'
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
@@ -111,7 +104,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-dev-ipa
-          path: build/ios/ipa/dev/RSNC_Dev.ipa
+          path: build/ios/ipa/dev/App_Dev.ipa
           retention-days: 3
 
       - name: Clean Build Folder
@@ -134,11 +127,12 @@ jobs:
             --build-name="$VERSION_NAME" \
             --build-number=2 \
             --export-options-plist=ios/ExportOptions.plist
+          mv build/ios/ipa/*.ipa build/ios/ipa/App.ipa
 
       - name: Upload Prod App to TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
-          app-path: 'build/ios/ipa/RSNC.ipa'
+          app-path: 'build/ios/ipa/App.ipa'
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
@@ -147,7 +141,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-prod-ipa
-          path: build/ios/ipa/RSNC.ipa
+          path: build/ios/ipa/App.ipa
           retention-days: 3
 
       - name: Report Failure & Cancel Run

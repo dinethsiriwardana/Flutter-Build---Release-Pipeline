@@ -23,6 +23,6 @@ jobs:
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           token: ${{ secrets.FIREBASE_TOKEN }}
-          groups: RSNC
+          groups: testers
           file: apk/app-release.apk
           releaseNotes: "Build ${{ inputs.build_number }} — commit ${{ github.sha }}"

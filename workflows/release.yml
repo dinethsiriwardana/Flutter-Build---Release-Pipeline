@@ -3,21 +3,21 @@ name: Unified Multi-Platform Release (iOS & Android)
 on:
   push:
     branches:
-      - rsnc-release
+      - release
 
 concurrency:
-  group: rsnc-release
+  group: release
   cancel-in-progress: false
 
 jobs:
 
   setup:
-    uses: ./.github/workflows/jobs/job_setup.yml
+    uses: ./.github/workflows/job_setup.yml
     secrets: inherit
 
   build-android:
     needs: setup
-    uses: ./.github/workflows/jobs/job_build_android.yml
+    uses: ./.github/workflows/job_build_android.yml
     with:
       build_number: ${{ needs.setup.outputs.build_number }}
       version_name: ${{ needs.setup.outputs.version_name }}
@@ -25,7 +25,7 @@ jobs:
 
   build-ios:
     needs: setup
-    uses: ./.github/workflows/jobs/job_build_ios.yml
+    uses: ./.github/workflows/job_build_ios.yml
     with:
       build_number: ${{ needs.setup.outputs.build_number }}
       version_name: ${{ needs.setup.outputs.version_name }}
@@ -33,16 +33,16 @@ jobs:
 
   distribute-firebase:
     needs: [setup, build-android]
-    if: ${{ needs.build-android.result == 'success' }}
-    uses: ./.github/workflows/jobs/job_distribute_firebase.yml
+    if: needs.build-android.result == 'success'
+    uses: ./.github/workflows/job_distribute_firebase.yml
     with:
       build_number: ${{ needs.setup.outputs.build_number }}
     secrets: inherit
 
   upload-playstore:
     needs: [setup, build-android]
-    if: ${{ needs.build-android.result == 'success' }}
-    uses: ./.github/workflows/jobs/job_upload_playstore.yml
+    if: needs.build-android.result == 'success'
+    uses: ./.github/workflows/job_upload_playstore.yml
     secrets: inherit
 
   release:
@@ -53,8 +53,11 @@ jobs:
       needs.setup.result == 'success' &&
       (needs.distribute-firebase.result == 'success' || needs.distribute-firebase.result == 'skipped') &&
       (needs.build-ios.result == 'success' || needs.build-ios.result == 'skipped')
-    uses: ./.github/workflows/jobs/job_release.yml
+    uses: ./.github/workflows/job_release.yml
     with:
       build_number: ${{ needs.setup.outputs.build_number }}
       version_name: ${{ needs.setup.outputs.version_name }}
     secrets: inherit
+
+
+    

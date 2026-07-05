@@ -1,0 +1,20 @@
+name: Setup Environment Files
+description: Writes dev and prod dart-define env files
+inputs:
+  dev_env:
+    description: "Dev env base64 string"
+    required: true
+  prod_env:
+    description: "Prod env base64 string"
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        cat << 'EOF' > .env
+        ${{ inputs.dev_env }}
+        EOF
+        cat << 'EOF' > .prod.env
+        ${{ inputs.prod_env }}
+        EOF

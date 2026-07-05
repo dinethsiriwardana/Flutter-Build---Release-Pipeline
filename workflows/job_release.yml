@@ -62,13 +62,13 @@ jobs:
             zip -j zipped/app-release-aab-${BUILD_NUMBER}.zip \
               release-artifacts/app-release.aab
           fi
-          if [ -f release-artifacts/RSNC_Dev.ipa ]; then
+          if [ -f release-artifacts/App_Dev.ipa ]; then
             zip -j zipped/app-release-dev-ipa-${BUILD_NUMBER}.zip \
-              release-artifacts/RSNC_Dev.ipa
+              release-artifacts/App_Dev.ipa
           fi
-          if [ -f release-artifacts/RSNC.ipa ]; then
+          if [ -f release-artifacts/App.ipa ]; then
             zip -j zipped/app-release-prod-ipa-${BUILD_NUMBER}.zip \
-              release-artifacts/RSNC.ipa
+              release-artifacts/App.ipa
           fi
 
       - name: Create GitHub Release
